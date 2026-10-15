@@ -1,0 +1,54 @@
+name: payhub
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: payhub-postgres
+    environment:
+      POSTGRES_DB: payhub
+      POSTGRES_USER: payhub
+      POSTGRES_PASSWORD: payhub
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U payhub -d payhub"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: payhub-redis
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # Sobe a API containerizada só quando pedido: docker compose --profile full up
+  api:
+    build: .
+    container_name: payhub-api
+    profiles: ["full"]
+    env_file: .env
+    environment:
+      DATABASE_URL: postgres://payhub:payhub@postgres:5432/payhub?sslmode=disable
+      REDIS_ADDR: redis:6379
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  redisdata:

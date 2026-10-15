@@ -1,0 +1,16 @@
+bin/
+tmp/
+.env
+*.exe
+*.test
+*.out
+coverage.*
+docs/swagger.json
+docs/swagger.yaml
+docs/docs.go
+.idea/
+.DS_Store
+
+# Claude Code (local, fora do versionamento)
+CLAUDE.md
+.claude/

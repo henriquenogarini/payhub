@@ -1,0 +1,13 @@
+{
+  "recommendations": [
+    "golang.go",
+    "anthropic.claude-code",
+    "ms-azuretools.vscode-containers",
+    "humao.rest-client",
+    "redhat.vscode-yaml",
+    "task.vscode-task",
+    "usernamehw.errorlens",
+    "eamodio.gitlens",
+    "editorconfig.editorconfig"
+  ]
+}
