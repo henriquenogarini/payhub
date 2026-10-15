@@ -1,5 +1,6 @@
 bin/
 tmp/
+.task/
 .env
 *.exe
 *.test
