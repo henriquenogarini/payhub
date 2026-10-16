@@ -1,0 +1,36 @@
+# https://taskfile.dev
+# [estudo] Task é um "task runner": guarda comandos longos com nomes curtos.
+# O Go não precisa dele (go build/go test bastam), mas centraliza comandos de
+# infra/lint/migrations que o "go" sozinho não cobre. Rode "task --list" para ver tudo.
+version: "3"
+
+vars:
+  BIN_DIR: bin
+  # [estudo] exeExt vira ".exe" no Windows e "" no Linux, então o mesmo Taskfile
+  # funciona na sua máquina e no CI.
+  API_BIN: "{{.BIN_DIR}}/api{{exeExt}}"
+
+tasks:
+  build:
+    desc: Compile the API binary into bin/
+    cmds:
+      - go build -o {{.API_BIN}} ./cmd/api
+    # [estudo] sources/generates: o Task só recompila se algum .go mudou.
+    sources:
+      - "**/*.go"
+      - go.mod
+    generates:
+      - "{{.API_BIN}}"
+
+  run:
+    desc: Run the API with hot reload (air, configured in .air.toml)
+    cmds:
+      - air
+
+  test:
+    desc: Run all tests with the race detector and coverage
+    # [estudo] -race usa cgo, por isso exige gcc e CGO_ENABLED=1.
+    env:
+      CGO_ENABLED: "1"
+    cmds:
+      - go test -race -cover ./...
