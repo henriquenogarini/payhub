@@ -11,6 +11,8 @@ package main
 import (
 	"fmt"
 	"os"
+
+	"github.com/henriquenogarini/payhub/internal/config"
 )
 
 // [estudo] main() fica o mais curta possível: só chama run() e decide o código de saída.
@@ -35,8 +37,16 @@ func main() {
 // minúscula = não exportado (package-private). Não existem as palavras public/private.
 func run() error {
 	// [estudo] Nas próximas subpartes este é o lugar do wiring manual:
-	// carregar config (0.2), criar logger (0.3), subir o servidor HTTP (0.4)...
-	fmt.Println("payhub api: starting")
+	// criar logger (0.3), subir o servidor HTTP (0.4), conectar no Postgres (0.5)...
+	cfg, err := config.Load()
+	if err != nil {
+		// [estudo] Envolvemos o erro com contexto ("load config: ...") e devolvemos para o main.
+		// A mensagem final fica encadeada: "payhub api: load config: validate config: ...".
+		return fmt.Errorf("load config: %w", err)
+	}
+
+	// [estudo] Nunca imprimimos a config inteira: ela contém segredos (JWT_SECRET, senha do banco).
+	fmt.Printf("payhub api: starting (env=%s, port=%d)\n", cfg.AppEnv, cfg.HTTP.Port)
 
 	// [estudo] nil é o "zero value" de error: significa "deu tudo certo".
 	return nil
