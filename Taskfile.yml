@@ -4,6 +4,11 @@
 # infra/lint/migrations que o "go" sozinho não cobre. Rode "task --list" para ver tudo.
 version: "3"
 
+# [estudo] O Task lê o .env e injeta as variáveis em todas as tasks. Assim o código Go
+# só lê variáveis de ambiente (config.Load) e não precisa de biblioteca para .env.
+# Se o arquivo não existir (ex.: no CI), ele é simplesmente ignorado.
+dotenv: [".env"]
+
 vars:
   BIN_DIR: bin
   # [estudo] exeExt vira ".exe" no Windows e "" no Linux, então o mesmo Taskfile
@@ -28,9 +33,12 @@ tasks:
       - air
 
   test:
-    desc: Run all tests with the race detector and coverage
-    # [estudo] -race usa cgo, por isso exige gcc e CGO_ENABLED=1.
+    desc: Run all tests with coverage and the race detector (disable with RACE=false)
+    # [estudo] -race usa cgo, por isso exige um gcc funcional e CGO_ENABLED=1.
+    # Sem gcc local: "task test RACE=false". O CI sempre roda com -race.
+    vars:
+      RACE: '{{.RACE | default "true"}}'
     env:
-      CGO_ENABLED: "1"
+      CGO_ENABLED: '{{if eq .RACE "false"}}0{{else}}1{{end}}'
     cmds:
-      - go test -race -cover ./...
+      - go test {{if ne .RACE "false"}}-race {{end}}-cover ./...
